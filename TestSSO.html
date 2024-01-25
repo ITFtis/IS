@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="https://code.jquery.com/jquery-1.11.3.js"></script>
+</head>
+<body>
+    <div><label>tokne:</label><label class="token"></label></div>
+    <div><label>user:</label><label class="user"></label></div>
+    <button>取資料</button>
+</body>
+</html>
+<script>
+    //var  SsoServer = "https://pj.ftis.org.tw/Sample/Sso/";
+    var SsoServer = "http://localhost:49286/";
+    var SsoLogin = SsoServer;// "http://localhost:49286/"; //AD
+    var SsoLogoff = SsoServer+ "Auth/Logoff"; //AD
+    var SsoGetUser = SsoServer+ "Auth/UserInfo";//AD
+    function getRequestParas() {
+        var s1 = location.search.substring(1, location.search.length).split('&'),
+            r = {}, s2, i;
+        for (i = 0; i < s1.length; i += 1) {
+            s2 = s1[i].split('=');
+            if (s2[0].trim() != "")
+                r[decodeURIComponent(s2[0]).toLowerCase()] = decodeURIComponent(decodeURIComponent(s2[1]));
+        }
+        return r;
+    };
+    console.log(encodeURI(location.href));
+    $('.token').text(encodeURI(location.href));
+    $('button').hide();
+    $('.user').parent().hide();
+    var _token = getRequestParas()['ssotoken'];
+    if (getRequestParas()['ssotoken']) {
+        $('.token').text(_token);
+        $('button').show();
+    }
+    else
+        //location.href = 'http://localhost:51513/User/DouLoginRemember?ReturnUrl=' + encodeURI("http://localhost:44396/User/DouLoginRemember");
+        location.href = SsoLogin+'?ReturnUrl=' + encodeURI(location.href);
+
+    $('button').on('click', function () {
+        $('.user').parent().show();
+        $.ajax({
+            url: SsoGetUser,
+            data: { token: _token}
+        })
+            .done(function (r,dsad,sd) {
+                $('.user').text(JSON.stringify(r))
+            })
+            .fail(function (e, r, sd) {
+                $('.user').text(r);
+            })
+            .always(function () {
+                //alert("finished");
+            });
+    });
+
+</script>
